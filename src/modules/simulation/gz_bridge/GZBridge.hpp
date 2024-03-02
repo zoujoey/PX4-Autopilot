@@ -67,7 +67,7 @@
 #include <gz/msgs/fluid_pressure.pb.h>
 #include <gz/msgs/model.pb.h>
 #include <gz/msgs/odometry_with_covariance.pb.h>
-#include <gz/msgs9/gz/msgs/stringmsg.pb.h>
+#include <gz/msgs/stringmsg.pb.h>
 
 using namespace time_literals;
 
