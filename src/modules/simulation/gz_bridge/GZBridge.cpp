@@ -160,7 +160,7 @@ int GZBridge::init()
 			follow_msg.set_data(_model_name);
 			callStringMsgService("/gui/follow", follow_msg);
 			gz::msgs::Vector3d follow_offset_msg{};
-			follow_offset_msg.set_x(6.0);
+			follow_offset_msg.set_x(-6.0);
 			follow_offset_msg.set_y(0.0);
 			follow_offset_msg.set_z(6.0);
 			callVector3dService("/gui/follow/offset", follow_offset_msg);
