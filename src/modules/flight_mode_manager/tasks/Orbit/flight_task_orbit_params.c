@@ -44,7 +44,7 @@
 PARAM_DEFINE_FLOAT(MC_ORBIT_RAD_MAX, 1000.0f);
 
 /**
- * Yaw behaviour during orbit flight.
+ * Default yaw during orbit.
  *
  * @value 0 Front to Circle Center
  * @value 1 Hold Initial Heading
