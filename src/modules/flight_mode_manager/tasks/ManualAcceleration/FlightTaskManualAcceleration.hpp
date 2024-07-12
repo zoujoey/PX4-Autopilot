@@ -33,6 +33,7 @@
 
 #pragma once
 
+#include <lib/collision_prevention/CollisionPrevention.hpp>
 #include "FlightTaskManualAltitudeSmoothVel.hpp"
 #include "StickAccelerationXY.hpp"
 #include "StickYaw.hpp"
@@ -52,4 +53,8 @@ protected:
 
 	StickAccelerationXY _stick_acceleration_xy{this};
 	WeatherVane _weathervane{this}; /**< weathervane library, used to implement a yaw control law that turns the vehicle nose into the wind */
+	CollisionPrevention _collision_prevention{this}; /**< collision avoidance setpoint amendment */
+	DEFINE_PARAMETERS_CUSTOM_PARENT(FlightTaskManualAltitudeSmoothVel,
+					(ParamFloat<px4::params::MPC_ACC_HOR>) _param_mpc_acc_hor
+				       )
 };

@@ -111,6 +111,10 @@ bool CollisionPrevention::is_active()
 	_was_active = activated;
 	return activated;
 }
+bool CollisionPrevention::is_interfering()
+{
+	return _interfering;
+}
 
 void
 CollisionPrevention::_addObstacleSensorData(const obstacle_distance_s &obstacle, const matrix::Quatf &vehicle_attitude)
@@ -509,7 +513,7 @@ CollisionPrevention::_calculateConstrainedSetpoint(Vector2f &setpoint, const Vec
 }
 
 void
-CollisionPrevention::modifySetpoint(Vector2f &original_setpoint, const float max_speed, const Vector2f &curr_pos,
+CollisionPrevention::modifySetpoint(Vector2f &original_setpoint, const float max_accel, const Vector2f &curr_pos,
 				    const Vector2f &curr_vel)
 {
 	//calculate movement constraints based on range data
@@ -517,10 +521,18 @@ CollisionPrevention::modifySetpoint(Vector2f &original_setpoint, const float max
 	_calculateConstrainedSetpoint(new_setpoint, curr_pos, curr_vel);
 
 	//warn user if collision prevention starts to interfere
-	bool currently_interfering = (new_setpoint(0) < original_setpoint(0) - 0.05f * max_speed
-				      || new_setpoint(0) > original_setpoint(0) + 0.05f * max_speed
-				      || new_setpoint(1) < original_setpoint(1) - 0.05f * max_speed
-				      || new_setpoint(1) > original_setpoint(1) + 0.05f * max_speed);
+	bool currently_interfering = (new_setpoint(0) < original_setpoint(0) - 0.05f * max_accel
+				      || new_setpoint(0) > original_setpoint(0) + 0.05f * max_accel
+				      || new_setpoint(1) < original_setpoint(1) - 0.05f * max_accel
+				      || new_setpoint(1) > original_setpoint(1) + 0.05f * max_accel);
+
+	if (currently_interfering) {
+		PX4_WARN("Collision prevention interferes with user input");
+		// print original setpoint and new setpoint
+		PX4_WARN("original_setpoint: %f, %f", static_cast<double>(original_setpoint(0)),
+			 static_cast<double>(original_setpoint(1)));
+		PX4_WARN("new_setpoint: %f, %f", static_cast<double>(new_setpoint(0)), static_cast<double>(new_setpoint(1)));
+	}
 
 	_interfering = currently_interfering;
 

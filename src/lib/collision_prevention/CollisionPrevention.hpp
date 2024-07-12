@@ -71,6 +71,7 @@ public:
 	 * Returns true if Collision Prevention is running
 	 */
 	bool is_active();
+	bool is_interfering();
 
 	/**
 	 * Computes collision free setpoints

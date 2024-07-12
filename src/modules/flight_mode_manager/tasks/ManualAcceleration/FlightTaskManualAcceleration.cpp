@@ -80,6 +80,24 @@ bool FlightTaskManualAcceleration::update()
 		}
 	}
 
+	float acceleration_scale = _param_mpc_acc_hor.get() * 2.f; // because of drag the average acceleration is half
+	// PX4_WARN("acceleration_scale: %f", static_cast<double>(acceleration_scale));
+
+	Vector2f acceleration_setpoint_xy = _acceleration_setpoint.xy();
+	// print out  the xy setpoint acceleration as PX4warn, whereby its a vector2f
+	// PX4_WARN("acceleration_setpoint_xy: %f, %f", static_cast<double>(acceleration_setpoint_xy(0)), static_cast<double>(acceleration_setpoint_xy(1)));
+	// PX4_WARN("_acceleration_setpoint: %f, %f, %f", static_cast<double>(_acceleration_setpoint(0)), static_cast<double>(_acceleration_setpoint(1)), static_cast<double>(_acceleration_setpoint(2)));
+
+	if (_collision_prevention.is_active()) {
+		_collision_prevention.modifySetpoint(acceleration_setpoint_xy, acceleration_scale, _position.xy(), _velocity.xy());
+
+		if (_collision_prevention.is_interfering()) {
+			PX4_WARN("Collision Prevention is interfering");
+			_acceleration_setpoint.xy() = acceleration_setpoint_xy;
+			_velocity_setpoint.xy() = acceleration_setpoint_xy * _deltatime;
+		}
+	}
+
 	return ret;
 }
 
