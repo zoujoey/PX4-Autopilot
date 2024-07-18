@@ -613,52 +613,59 @@ void VehicleMagnetometer::CheckFailover(const hrt_abstime &time_now_us)
 {
 	// check failover and report (save failover report for a cycle where parameters didn't update)
 	if (_last_failover_count != _voter.failover_count()) {
-		uint32_t flags = _voter.failover_state();
-		int failover_index = _voter.failover_index();
+		if (_last_failover_index != _voter.failover_index()) {
+			uint32_t flags = _voter.failover_state();
+			int failover_index = _voter.failover_index();
 
-		if (flags != DataValidator::ERROR_FLAG_NO_ERROR) {
-			if (failover_index >= 0 && failover_index < MAX_SENSOR_COUNT) {
+			if (flags != DataValidator::ERROR_FLAG_NO_ERROR) {
+				if (failover_index >= 0 && failover_index < MAX_SENSOR_COUNT) {
 
-				if (time_now_us > _last_error_message + 3_s) {
-					mavlink_log_emergency(&_mavlink_log_pub, "%s #%i failed: %s%s%s%s%s!\t",
-							      _calibration[failover_index].SensorString(),
-							      failover_index,
-							      ((flags & DataValidator::ERROR_FLAG_NO_DATA) ? " OFF" : ""),
-							      ((flags & DataValidator::ERROR_FLAG_STALE_DATA) ? " STALE" : ""),
-							      ((flags & DataValidator::ERROR_FLAG_TIMEOUT) ? " TIMEOUT" : ""),
-							      ((flags & DataValidator::ERROR_FLAG_HIGH_ERRCOUNT) ? " ERR CNT" : ""),
-							      ((flags & DataValidator::ERROR_FLAG_HIGH_ERRDENSITY) ? " ERR DNST" : ""));
+					if (time_now_us > _last_error_message + 3_s) {
+						mavlink_log_emergency(&_mavlink_log_pub, "%s #%i failed: %s%s%s%s%s!\t",
+								      _calibration[failover_index].SensorString(),
+								      failover_index,
+								      ((flags & DataValidator::ERROR_FLAG_NO_DATA) ? " OFF" : ""),
+								      ((flags & DataValidator::ERROR_FLAG_STALE_DATA) ? " STALE" : ""),
+								      ((flags & DataValidator::ERROR_FLAG_TIMEOUT) ? " TIMEOUT" : ""),
+								      ((flags & DataValidator::ERROR_FLAG_HIGH_ERRCOUNT) ? " ERR CNT" : ""),
+								      ((flags & DataValidator::ERROR_FLAG_HIGH_ERRDENSITY) ? " ERR DNST" : ""));
 
-					events::px4::enums::sensor_failover_reason_t failover_reason{};
+						events::px4::enums::sensor_failover_reason_t failover_reason{};
 
-					if (flags & DataValidator::ERROR_FLAG_NO_DATA) { failover_reason = failover_reason | events::px4::enums::sensor_failover_reason_t::no_data; }
+						if (flags & DataValidator::ERROR_FLAG_NO_DATA) { failover_reason = failover_reason | events::px4::enums::sensor_failover_reason_t::no_data; }
 
-					if (flags & DataValidator::ERROR_FLAG_STALE_DATA) { failover_reason = failover_reason | events::px4::enums::sensor_failover_reason_t::stale_data; }
+						if (flags & DataValidator::ERROR_FLAG_STALE_DATA) { failover_reason = failover_reason | events::px4::enums::sensor_failover_reason_t::stale_data; }
 
-					if (flags & DataValidator::ERROR_FLAG_TIMEOUT) { failover_reason = failover_reason | events::px4::enums::sensor_failover_reason_t::timeout; }
+						if (flags & DataValidator::ERROR_FLAG_TIMEOUT) { failover_reason = failover_reason | events::px4::enums::sensor_failover_reason_t::timeout; }
 
-					if (flags & DataValidator::ERROR_FLAG_HIGH_ERRCOUNT) { failover_reason = failover_reason | events::px4::enums::sensor_failover_reason_t::high_error_count; }
+						if (flags & DataValidator::ERROR_FLAG_HIGH_ERRCOUNT) { failover_reason = failover_reason | events::px4::enums::sensor_failover_reason_t::high_error_count; }
 
-					if (flags & DataValidator::ERROR_FLAG_HIGH_ERRDENSITY) { failover_reason = failover_reason | events::px4::enums::sensor_failover_reason_t::high_error_density; }
+						if (flags & DataValidator::ERROR_FLAG_HIGH_ERRDENSITY) { failover_reason = failover_reason | events::px4::enums::sensor_failover_reason_t::high_error_density; }
 
-					/* EVENT
-					 * @description
-					 * Land immediately and check the system.
-					 */
-					events::send<uint8_t, events::px4::enums::sensor_failover_reason_t>(
-						events::ID("sensor_failover_mag"), events::Log::Emergency, "Magnetometer sensor #{1} failure: {2}", failover_index,
-						failover_reason);
+						/* EVENT
+						* @description
+						* Land immediately and check the system.
+						*/
+						events::send<uint8_t, events::px4::enums::sensor_failover_reason_t>(
+							events::ID("sensor_failover_mag"), events::Log::Emergency, "Magnetometer sensor #{1} failure: {2}", failover_index,
+							failover_reason);
 
-					_last_error_message = time_now_us;
+						_last_error_message = time_now_us;
+					}
+
+					// reduce priority of failed sensor to the minimum
+					_priority[failover_index] = 1;
 				}
-
-				// reduce priority of failed sensor to the minimum
-				_priority[failover_index] = 1;
 			}
+
+			_last_failover_count = _voter.failover_count();
+			_last_failover_index = failover_index;
 		}
 
-		_last_failover_count = _voter.failover_count();
+	} else {
+		_last_failover_index = -1;
 	}
+
 }
 
 void VehicleMagnetometer::calcMagInconsistency()

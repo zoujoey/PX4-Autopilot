@@ -156,6 +156,7 @@ private:
 
 	DataValidatorGroup _voter{1};
 	unsigned _last_failover_count{0};
+	int8_t _last_failover_index{-1};
 
 	uint64_t _timestamp_sample_sum[MAX_SENSOR_COUNT] {};
 	matrix::Vector3f _data_sum[MAX_SENSOR_COUNT] {};
