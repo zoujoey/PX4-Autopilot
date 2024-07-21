@@ -1599,9 +1599,9 @@ MavlinkReceiver::handle_message_set_attitude_target(mavlink_message_t *msg)
 			q.copyTo(attitude_setpoint.q_d);
 
 			matrix::Eulerf euler{q};
-			attitude_setpoint.roll_body = euler.phi();
-			attitude_setpoint.pitch_body = euler.theta();
-			attitude_setpoint.yaw_body = euler.psi();
+			// attitude_setpoint.roll_body = euler.phi();
+			// attitude_setpoint.pitch_body = euler.theta();
+			// attitude_setpoint.yaw_body = euler.psi();
 
 			// TODO: review use case
 			attitude_setpoint.yaw_sp_move_rate = (type_mask & ATTITUDE_TARGET_TYPEMASK_BODY_YAW_RATE_IGNORE) ?

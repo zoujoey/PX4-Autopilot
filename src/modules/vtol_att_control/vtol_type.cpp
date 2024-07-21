@@ -563,11 +563,11 @@ float VtolType::pusher_assist()
 		tilt_new = R_yaw_correction * tilt_new;
 
 		// now extract roll and pitch setpoints
-		_v_att_sp->pitch_body = atan2f(tilt_new(0), tilt_new(2));
-		_v_att_sp->roll_body = -asinf(tilt_new(1));
+		// _v_att_sp->pitch_body = atan2f(tilt_new(0), tilt_new(2));
+		// _v_att_sp->roll_body = -asinf(tilt_new(1));
 
-		const Quatf q_sp(Eulerf(_v_att_sp->roll_body, _v_att_sp->pitch_body, euler_sp(2)));
-		q_sp.copyTo(_v_att_sp->q_d);
+		// const Quatf q_sp(Eulerf(_v_att_sp->roll_body, _v_att_sp->pitch_body, euler_sp(2)));
+		// q_sp.copyTo(_v_att_sp->q_d);
 	}
 
 	return forward_thrust;
